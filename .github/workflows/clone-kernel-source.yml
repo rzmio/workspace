@@ -3,23 +3,14 @@ name: Clone OEM Kernel
 on:
   workflow_dispatch:
     inputs:
-      source_repo:
-        description: 'Source repository URL'
-        required: true
-        type: string
       source_branch:
         description: 'Source branch'
         required: true
         type: string
       target_repo:
-        description: 'Target repository (e.g., rzmio/kernel_xiaomi_citrus)'
+        description: 'Target repo name'
         required: true
         type: string
-      commit_message:
-        description: 'Custom commit message'
-        required: false
-        type: string
-        default: 'Import OEM kernel source'
 
 jobs:
   clone:
@@ -29,18 +20,12 @@ jobs:
         run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost "$AGENT_TOOLSDIRECTORY"
 
       - name: Clone source
-        run: git clone --branch ${{ inputs.source_branch }} ${{ inputs.source_repo }} kernel
-
-      - name: Amend commit message (optional)
-        if: inputs.commit_message != ''
-        run: |
-          cd kernel
-          git commit --amend -m "${{ inputs.commit_message }}" || true
+        run: git clone --branch ${{ inputs.source_branch }} https://github.com/MiCode/Xiaomi_Kernel_OpenSource kernel
 
       - name: Push to target
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           cd kernel
-          git remote add target https://x-access-token:${GH_TOKEN}@github.com/${{ inputs.target_repo }}.git
+          git remote add target https://x-access-token:${GH_TOKEN}@github.com/rzmio/${{ inputs.target_repo }}.git
           git push target HEAD:main --force
