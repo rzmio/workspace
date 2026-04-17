@@ -1,0 +1,39 @@
+# This workflow is manually triggered to delete old workflow runs
+name: Delete Workflow Runs
+
+# This makes the workflow run only when manually triggered from the "Actions" tab
+on:
+  workflow_dispatch:
+    inputs:
+      # This lets you specify the workflow file to clean up, e.g., 'clone-oem-kernel.yml'
+      workflow:
+        description: 'The workflow file to delete runs for (e.g., clone-oem-kernel.yml)'
+        required: true
+        type: string
+      # This lets you decide how many of the most recent runs to keep
+      keep:
+        description: 'Number of recent runs to keep (0-10)'
+        required: false
+        type: number
+        default: 1
+
+jobs:
+  delete-runs:
+    # This job will run on the latest Ubuntu runner provided by GitHub
+    runs-on: ubuntu-latest
+    # These permissions are required for the action to be able to delete workflow runs
+    permissions:
+      actions: write
+    steps:
+      # This is the step that runs the 'delete-workflow-runs-action'
+      - name: Delete old workflow runs
+        uses: iamazeem/delete-workflow-runs-action@v1
+        with:
+          # The action automatically uses the token of the workflow, so you don't need to provide one
+          # Filter the runs to only those from the workflow file you specified
+          workflow: ${{ inputs.workflow }}
+          # Keep the number of recent runs you specified in the input
+          keep: ${{ inputs.keep }}
+          # This is important: It tells the action to also delete runs from disabled workflows.
+          # Without this, it might not be able to delete runs if the workflow definition is deleted.
+          include-disabled-workflows: true
