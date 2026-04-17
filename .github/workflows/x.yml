@@ -1,4 +1,4 @@
-name: Clone OEM Kernel
+name: Clone MiCode Branch
 
 on:
   workflow_dispatch:
